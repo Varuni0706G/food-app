@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: url(login.jpg) no-repeat center center/cover;
+        }
+       
+        .container {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+        input, select, button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Owner Login</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="category">
+            <option value="" disabled selected>Select Category</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="supermarket">Supermarket</option>
+            <option value="grocery">Grocery Shop</option>
+        </select>
+        <button id="loginButton" onclick="loginOwner()">Login</button>
+    </div>
+
+    <script>
+        function loginOwner() {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const category = document.getElementById("category").value;
+
+            // Validate inputs
+            if (!email || !password || !category) {
+                alert("All fields are required.");
+                return;
+            }
+
+            const owner = { email, password, category };
+            const loginButton = document.getElementById("loginButton");
+
+            // Disable the login button to prevent multiple clicks
+            loginButton.disabled = true;
+            loginButton.innerText = "Logging in...";
+
+            fetch("http://localhost:5000/api/owners/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(owner),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    alert(data.message);
+                    if (data.message === "Login successful") {
+                        localStorage.setItem("ownerEmail", owner.email);
+                        window.location.href = "owner-dashboard.html";
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    alert("An error occurred while logging in. Please try again.");
+                })
+                .finally(() => {
+                    // Re-enable the login button
+                    loginButton.disabled = false;
+                    loginButton.innerText = "Login";
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Registration</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f4; 
+        background: url(WhatsApp\ Image\ 2025-02-12\ at\ 18.04.47_26543ca4.jpg)no-repeat center center/cover;}
+      
+        .container { width: 300px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px gray; }
+        input, select, button { width: 100%; margin: 5px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Owner Registration</h2>
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="address" placeholder="address" required>
+        <select id="category">
+            <option value="restaurant">Restaurant</option>
+            <option value="supermarket">Supermarket</option>
+            <option value="grocery">Grocery Shop</option>
+        </select>
+        <button onclick="registerOwner()">Register</button>
+        <p>Already registered? <a href="owner-login.html">Login here</a></p>
+    </div>
+
+    <script>
+        function registerOwner() {
+            const owner = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value,
+                category: document.getElementById("category").value,
+            };
+
+            fetch("http://localhost:5000/api/owners/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(owner),
+            }).then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

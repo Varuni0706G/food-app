@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Orders</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      padding: 20px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: #007bff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f9f9f9;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      background-color: #007bff;
+      color: #fff;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    #map {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      display: none; /* Initially hidden */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Customer Orders</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Client Email</th>
+          <th>Order Details</th>
+          <th>Total Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ordersList">
+        <!-- Orders will be dynamically added here -->
+      </tbody>
+    </table>
+    <div id="map"></div> <!-- Map Container -->
+  </div>
+
+  <!-- Add Google Maps Script -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+  <script>
+    /**
+     * Fetch orders from the backend and display them in the table.
+     */
+    function fetchOwnerOrders() {
+      fetch("http://localhost:5000/api/owners/orders/owner@example.com") // Replace with your backend endpoint
+        .then((response) => response.json())
+        .then((orders) => displayOrders(orders))
+        .catch((error) => console.error("Error fetching orders:", error));
+    }
+
+    /**
+     * Display fetched orders in the orders table.
+     * @param {Array} orders - List of orders to display.
+     */
+    function displayOrders(orders) {
+      const ordersList = document.getElementById("ordersList");
+      ordersList.innerHTML = "";
+
+      if (orders.length === 0) {
+        ordersList.innerHTML = "<tr><td colspan='4'>No orders found.</td></tr>";
+        return;
+      }
+
+      orders.forEach((order) => {
+        const orderDetailsHTML = order.cart
+          .map((item) => `${item.foodName} (${item.quantity})`)
+          .join("<br>");
+
+        const row = `
+          <tr>
+            <td>${order.clientEmail}</td>
+            <td>${orderDetailsHTML}</td>
+            <td>₹${order.totalPrice.toFixed(2)}</td>
+            <td><button class="btn" onclick="showLocation(${order.location.lat}, ${order.location.lng})">View Location</button></td>
+          </tr>
+        `;
+        ordersList.innerHTML += row;
+      });
+    }
+
+    /**
+     * Show the Google Map with a route from the restaurant to the customer's location.
+     * @param {number} lat - Latitude of the customer's location.
+     * @param {number} lng - Longitude of the customer's location.
+     */
+    function showLocation(lat, lng) {
+      const mapContainer = document.getElementById("map");
+      mapContainer.style.display = "block"; // Make the map visible
+
+      const restaurant = { lat: 28.6448, lng: 77.216721 }; // Replace with your restaurant's latitude and longitude
+      const customer = { lat: lat, lng: lng };
+
+      const map = new google.maps.Map(mapContainer, {
+        zoom: 12,
+        center: restaurant,
+      });
+
+      const directionsService = new google.maps.DirectionsService();
+      const directionsRenderer = new google.maps.DirectionsRenderer();
+
+      directionsRenderer.setMap(map);
+
+      directionsService.route(
+        {
+          origin: restaurant,
+          destination: customer,
+          travelMode: "DRIVING", // Travel modes: DRIVING, WALKING, BICYCLING, TRANSIT
+        },
+        (response, status) => {
+          if (status === "OK") {
+            directionsRenderer.setDirections(response);
+          } else {
+            alert("Failed to load directions: " + status);
+          }
+        }
+      );
+    }
+
+    // Load orders when the page is loaded
+    document.addEventListener("DOMContentLoaded", fetchOwnerOrders);
+  </script>
+</body>
+</html>

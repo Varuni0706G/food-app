@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Dashboard</title>
+  <style>
+   /* General styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), 
+              url(dashb.jpg) no-repeat center center fixed;
+  background-size: cover; /* Ensures the image covers the entire viewport */
+  color: #333;
+}
+
+/* Content container */
+.container {
+  width: 80%;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.9); /* White background with slight transparency */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Other styles remain the same */
+h1, h3 {
+  color: #2c3e50;
+  text-align: center;
+  font-size: 24px; /* Larger font size */
+}
+
+/* Form styling */
+form {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+form label {
+  font-weight: bold;
+  color: #34495e;
+  font-size: 16px; /* Slightly larger font */
+}
+
+input, select, button {
+  width: 100%;
+  padding: 12px; /* More padding for better spacing */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px; /* Slightly larger font */
+}
+
+input:focus, select:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+button {
+  background-color: #27ae60;
+  color: white;
+  font-weight: bold;
+  font-size: 16px; /* Larger button text */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2ecc71;
+}
+
+button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* Food item card styling */
+.food-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  background-color: #fdfdfd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.food-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.food-item h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.food-item p {
+  margin: 5px 0;
+  color: #7f8c8d;
+  font-size: 15px; /* Larger font size for better readability */
+  line-height: 1.6; /* Better spacing between lines */
+}
+
+#food-list p {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 16px; /* Slightly larger font */
+}
+
+
+
+  
+
+  
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Owner Dashboard</h1>
+
+    <h3>Add Food Item</h3>
+    <form id="add-food-form">
+      <label>
+        Food Name:
+        <input type="text" id="foodName" required />
+      </label>
+      <label>
+        Actual Price:
+        <input type="number" id="actualPrice" required />
+      </label>
+      <label>
+        Discounted Price:
+        <input type="number" id="discountPrice" required />
+      </label>
+      <label>
+        Category:
+        <select id="category" required>
+          <option value="restaurant">Restaurant</option>
+          <option value="supermarket">Supermarket</option>
+          <option value="grocery">Grocery</option>
+        </select>
+      </label>
+      <button type="submit">Add Item</button>
+    </form>
+
+    <h3>Your Food Items</h3>
+    <div id="food-list"></div>
+    <button onclick="window.location.href='orders.html'" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      View Orders
+    </button>
+    
+  </div>
+
+  <script>
+    const ownerEmail = "owner1@example.com"; // Replace with the actual logged-in owner's email
+
+    document.addEventListener("DOMContentLoaded", function () {
+      fetchOwnerFoodItems();
+
+      const form = document.getElementById("add-food-form");
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const foodName = document.getElementById("foodName").value;
+        const actualPrice = document.getElementById("actualPrice").value;
+        const discountPrice = document.getElementById("discountPrice").value;
+        const category = document.getElementById("category").value;
+
+        fetch("http://localhost:5000/api/owners/add-item", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: ownerEmail, foodName, actualPrice, discountPrice, category }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            alert(data.message);
+            fetchOwnerFoodItems(); // Refresh the list after adding
+          })
+          .catch(error => console.error("Error adding food item:", error));
+      });
+    });
+
+    function fetchOwnerFoodItems() {
+      fetch(`http://localhost:5000/api/owners/food-items/${ownerEmail}`)
+        .then(response => response.json())
+        .then(foodItems => {
+          displayOwnerFoodItems(foodItems);
+        })
+        .catch(error => console.error("Error fetching owner food items:", error));
+    }
+    
+
+    function displayOwnerFoodItems(foodItems) {
+      const foodList = document.getElementById("food-list");
+      foodList.innerHTML = "";
+
+      if (foodItems.length === 0) {
+        foodList.innerHTML = "<p>No food items found.</p>";
+        return;
+      }
+
+      foodItems.forEach(item => {
+        const foodCard = `
+          <div class="food-item">
+            <h3>${item.foodName}</h3>
+            <p>Category: ${item.category}</p>
+            <p>Actual Price: ₹${item.actualPrice}</p>
+            <p>Discount Price: ₹${item.discountPrice}</p>
+          </div>
+        `;
+        foodList.innerHTML += foodCard;
+      });
+    }
+  </script>
+</body>
+</html>

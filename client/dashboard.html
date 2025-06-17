@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Donation System</title>
+  <style>
+    /* General styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url(WhatsApp\ Image\ 2025-02-12\ at\ 14.25.29_b5606898.jpg) no-repeat center center/cover; /* Add your image here */
+      color: white; /* Text color for visibility */
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* Add an overlay to darken the background image */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); /* Darken the background */
+      z-index: -1;
+    }
+
+    /* Main container styling */
+    .container {
+      width: 80%;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background for text */
+      padding: 20px;
+      border-radius: 10px;
+      color: #333; /* Text color inside the container */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Categories and product styling */
+    .category {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background-color: #f4f4f4;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .category:hover {
+      background-color: #ddd;
+    }
+
+    .food-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      background-color: white;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .food-item h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .food-item p {
+      margin: 0;
+      color: #555;
+    }
+
+    button {
+      background-color: green;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: darkgreen;
+    }
+
+    /* Cart button styling */
+    .go-to-cart {
+      margin-top: 20px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 5px;
+    }
+
+    .go-to-cart:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome to Food Donation System</h2>
+
+    <h3>Categories</h3>
+    <div id="categories">
+      <div class="category" onclick="fetchCategoryItems('restaurant')">Restaurants</div>
+      <div class="category" onclick="fetchCategoryItems('supermarket')">Supermarkets</div>
+      <div class="category" onclick="fetchCategoryItems('grocery')">Grocery Shops</div>
+    </div>
+
+    <h3>Products</h3>
+    <div id="products"></div>
+  </div>
+
+  <script>
+    function fetchCategoryItems(category) {
+      fetch(`http://localhost:5000/api/food-items`)
+        .then(response => response.json())
+        .then(data => {
+          const items = data[category] || [];
+          displayProducts(items);
+        })
+        .catch(error => console.error("Error fetching category items:", error));
+    }
+
+    function displayProducts(items) {
+      const productsDiv = document.getElementById("products");
+      productsDiv.innerHTML = "";
+
+      if (items.length === 0) {
+        productsDiv.innerHTML = "<p>No items available in this category.</p>";
+        return;
+      }
+
+      items.forEach(item => {
+        const productCard = `
+          <div class="food-item">
+            <div>
+              <h3>${item.foodName}</h3>
+              <p>Actual Price: ₹${item.actualPrice}</p>
+              <p>Discount Price: ₹${item.discountPrice}</p>
+            </div>
+            <button onclick="addToCart('${item.foodName}', '${item.discountPrice}')">Add to Cart</button>
+          </div>
+        `;
+        productsDiv.innerHTML += productCard;
+      });
+    }
+
+    function addToCart(foodName, discountPrice) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart.push({ foodName, discountPrice });
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert(`${foodName} added to cart!`);
+    }
+
+    function goToCartPage() {
+      window.location.href = "cart.html";
+    }
+  </script>
+
+  <button class="go-to-cart" onclick="goToCartPage()">Go to Cart</button>
+</body>
+</html>

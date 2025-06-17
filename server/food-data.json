@@ -1,0 +1,18 @@
+{
+  "foodItems": [
+    {
+      "email": "owner1@example.com",
+      "foodName": "frooti",
+      "actualPrice": "10",
+      "discountPrice": "4",
+      "category": "restaurant"
+    },
+    {
+      "email": "owner1@example.com",
+      "foodName": "idly",
+      "actualPrice": "2",
+      "discountPrice": "1",
+      "category": "restaurant"
+    }
+  ]
+}
